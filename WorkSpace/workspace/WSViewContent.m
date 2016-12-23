@@ -79,7 +79,7 @@
     return vc;
 }
 
-
+static CGPoint inLocation; //item里面的point需要是初始值，如果一直变化则因坐标不确定而出问题
 - (void)handleAction:(id)sender
 {
     if ([sender isKindOfClass:[UIGestureRecognizer class]]) {
@@ -88,20 +88,23 @@
             [[NSNotificationCenter defaultCenter]postNotificationName:@"shakejaklfjsdklfjdslfjsfksk" object:sender];
             UILongPressGestureRecognizer *longpress = sender;
             WSAppItem *appitem = (id)longpress.view;
+          
+            CGPoint location       = CGPointZero;
+            CGPoint targetLocation = [longpress locationInView:self];
+
             //长按拖动的坐标
-            CGPoint location = [longpress locationInView:self];
-            CGPoint itemLocation = CGPointZero;
             if (longpress.state == UIGestureRecognizerStateBegan) {
                 [appitem scaleWhenSelect:YES];
-                itemLocation = [longpress locationInView:appitem];
+                inLocation     = [longpress locationInView:appitem.button];
             }
             else if(longpress.state == UIGestureRecognizerStateChanged)
             {
+                location =  [appitem moveToLocation:targetLocation inLocation:inLocation];
                 [UIView animateWithDuration:0.1 animations:^{
                     appitem.center = location;
                 }];
                 [appitem.superview bringSubviewToFront: appitem];
-                NSLog(@"GestureRecognizerStateChanged---%@-",NSStringFromCGPoint(appitem.point));
+                NSLog(@"GestureRecognizerStateChanged---%@-",NSStringFromCGPoint(location));
 
             }
             else if(longpress.state == UIGestureRecognizerStateEnded)

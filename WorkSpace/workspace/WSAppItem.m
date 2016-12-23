@@ -120,6 +120,8 @@
     
      [self scaleWhenSelect:!hidden];
 }
+
+static CGPoint inLocation; //item里面的point需要是初始值，如果一直变化则因坐标不确定而出问题
 - (void)btnTouchDown:(UIButton *)sender withEvent:(UIEvent *)event
 {
     if ([self isAnimation]) {
@@ -128,26 +130,32 @@
         UIView *parentV = self.superview;
         [self setGrayMaskHidden:NO];
         [parentV bringSubviewToFront:self];
+        UITouch *touch = [[event allTouches] anyObject];
+        inLocation     = [touch locationInView:self.button];
     }
 }
 
 //inlocation 是item内坐标，targetlocation 在content内坐标 return center point
 - (CGPoint)moveToLocation:(CGPoint)targetLocation inLocation:(CGPoint)inLocation
 {
-    CGFloat x = targetLocation.x - (inLocation.x-self.center.x);
-    CGFloat y = targetLocation.y - (inLocation.y-self.center.y);
+    CGFloat x = targetLocation.x - (inLocation.x-self.bounds.size.width/2.0);
+    CGFloat y = targetLocation.y - (inLocation.y-self.bounds.size.height/2.0);
     return CGPointMake(x, y);
 }
 
 - (void)btnDragged:(UIButton *)sender withEvent:(UIEvent *)event
 {
-    if ([self isAnimation]) {
+    if ([self isAnimation]) { //长按并拖动使用longpress处理，颤动之后使用此方法处理拖动
         UITouch *touch = [[event allTouches] anyObject];
         UIView *parentV = self.superview;
-        CGPoint location = [touch locationInView:parentV];
+        
+        CGPoint location       = CGPointZero;
+        CGPoint targetLocation = [touch locationInView:parentV];
+        location =  [self moveToLocation:targetLocation inLocation:inLocation];
         [UIView animateWithDuration:0.1 animations:^{
             self.center = location;
         }];
+        
         NSLog(@" sender = drag");
     }
 }
