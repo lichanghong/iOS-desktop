@@ -13,18 +13,18 @@
 #define COLUMN 4
 #define ROW    5
 
-
-@interface WSBaseItemBG : UIView    
-@property(nonatomic,assign)NSInteger   index;
-
-@end
-
 @interface WSApp : NSObject
 @property(nonatomic,assign)NSInteger group;
 @property(nonatomic,assign)NSInteger index;
 @property(nonatomic,strong)NSString *appName;
 @property(nonatomic,strong)NSString *appSchema;
 @end
+
+@interface WSBaseItemBG : UIView    
+@property(nonatomic,strong)WSApp *appModel;
+
+@end
+
 
 
 @interface WSViewContent : UIView<UIGestureRecognizerDelegate>
@@ -33,9 +33,7 @@
 @property (nonatomic,strong)NSMutableArray *appItems;
 
 + (WSViewContent *)createWSVC;
-
-
-
+ 
 
 - (void)dismiss;
 

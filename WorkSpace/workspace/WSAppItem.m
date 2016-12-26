@@ -118,7 +118,7 @@ static CGPoint inLocation; //item里面的point需要是初始值，如果一直
         inLocation     = [touch locationInView:self.button];
         //找出itemCenter ，在移动item的时候判断中点是否在自己域内
         for (WSBaseItemBG *itembg in parentV.baseItemBGs) {
-            if (itembg.index == self.appModel.index) {
+            if (itembg.appModel.index == self.appModel.index) {
                 itemCenter = itembg.center;
                 break;
             }
@@ -141,7 +141,7 @@ static CGPoint inLocation; //item里面的point需要是初始值，如果一直
         int row=ROW,column=COLUMN;
         for (WSBaseItemBG *baseItemBG in parentV.baseItemBGs) {
             if (CGRectContainsPoint(baseItemBG.frame, itemlocation)) {
-                lasIndex = baseItemBG.index;
+                lasIndex = baseItemBG.appModel.index;
             }
         }
         if (preIndex < lasIndex || preIndex > lasIndex)
@@ -189,7 +189,7 @@ static CGPoint inLocation; //item里面的point需要是初始值，如果一直
             parentV.appItems = [NSMutableArray arrayWithArray:sortedArr];
             for (WSAppItem *appItem in parentV.appItems) {
                 for (WSBaseItemBG *baseItemBG in parentV.baseItemBGs) {
-                    if (baseItemBG.index == appItem.appModel.index) {
+                    if (baseItemBG.appModel.index == appItem.appModel.index) {
                         
                         [UIView animateWithDuration:0.2 animations:^{
                             appItem.center = baseItemBG.center;

@@ -10,6 +10,13 @@
 
 
 @implementation WSBaseItemBG
+- (WSApp *)appModel
+{
+    if (!_appModel) {
+        _appModel = [[WSApp alloc]init];
+    }
+    return _appModel;
+}
 @end
 
 @implementation WSApp
@@ -31,7 +38,6 @@
 #define setY(v,y)   v.frame=CGRectMake(v.frame.origin.x, y , v.frame.size.width, v.frame.size.height)
 #define setW(v,w)   v.frame=CGRectMake(v.frame.origin.x,v.frame.origin.y, w, v.frame.size.height)
 #define setH(v,h)   v.frame=CGRectMake(v.frame.origin.x,v.frame.origin.y, v.frame.size.width, h)
-
 
 
 @implementation WSViewContent
@@ -57,7 +63,7 @@
             WSBaseItemBG *ibview = [[WSBaseItemBG alloc]init]; //item background view
             ibview.frame = CGRectMake(margin+(xpadding+w)*j, fy+(i*(h+ypadding)), w, h);
             ibview.backgroundColor = [UIColor greenColor];
-            ibview.index = i*COLUMN+j;
+            ibview.appModel.index = i*COLUMN+j;
             [vc addSubview:ibview];
             [vc.baseItemBGs addObject:ibview];
             
@@ -100,7 +106,7 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                 inLocationb     = [longpress locationInView:appitem.button];
                 //找出itemCenter ，在移动item的时候判断中点是否在自己域内
                 for (WSBaseItemBG *itembg in self.baseItemBGs) {
-                    if (itembg.index == appitem.appModel.index) {
+                    if (itembg.appModel.index == appitem.appModel.index) {
                         itemCenter = itembg.center;
                         break;
                     }
@@ -128,7 +134,7 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                 int row=ROW,column=COLUMN;
                 for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
                     if (CGRectContainsPoint(baseItemBG.frame, itemlocation)) {
-                        lasIndex = baseItemBG.index;
+                        lasIndex = baseItemBG.appModel.index;
                     }
                 }
                 if (preIndex < lasIndex || preIndex > lasIndex)
@@ -176,7 +182,7 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                     self.appItems = [NSMutableArray arrayWithArray:sortedArr];
                     for (WSAppItem *appItem in self.appItems) {
                         for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
-                            if (baseItemBG.index == appItem.appModel.index) {
+                            if (baseItemBG.appModel.index == appItem.appModel.index) {
                                 
                                 [UIView animateWithDuration:0.2 animations:^{
                                     appItem.center = baseItemBG.center;
