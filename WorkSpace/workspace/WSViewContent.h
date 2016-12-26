@@ -10,8 +10,12 @@
 
 #import <UIKit/UIKit.h>
 
+#define COLUMN 4
+#define ROW    5
+
+
 @interface WSBaseItemBG : UIView    
-@property(nonatomic,assign)CGPoint   point;
+@property(nonatomic,assign)NSInteger   index;
 
 @end
 
@@ -25,6 +29,7 @@
 
 @interface WSViewContent : UIView<UIGestureRecognizerDelegate>
 @property(nonatomic,assign)NSInteger group;
+@property (nonatomic,strong)NSMutableArray *baseItemBGs;
 @property (nonatomic,strong)NSMutableArray *appItems;
 
 + (WSViewContent *)createWSVC;

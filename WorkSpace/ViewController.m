@@ -53,14 +53,14 @@
     //第二个 View，它的宽度加上两边的空隙 5 等于 ScrollView 的宽度，两个 View 间有 10 的间距
     WSViewContent*view2 = [WSViewContent createWSVC];
     setX(view2, KScreenWidth);
-    view2.group = 2;
+    view2.group = 1;
     view2.backgroundColor = [UIColor blackColor];
 
     [self.bgScrollView addSubview:view2];
     //第三个 View
     WSViewContent *view3 =[WSViewContent createWSVC];
     view3.backgroundColor = [UIColor blackColor];
-    view3.group = 3;
+    view3.group = 2;
     setX(view3, KScreenWidth*2);
 
     [_bgScrollView addSubview:view3];

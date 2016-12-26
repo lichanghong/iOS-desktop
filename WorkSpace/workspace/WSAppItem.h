@@ -7,13 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "WSViewContent.h"
+
 
 @interface WSAppItem : UIView<UIGestureRecognizerDelegate>
 //model
-@property(nonatomic,assign)NSInteger group;
-@property(nonatomic,assign)CGPoint   point;
-@property(nonatomic,strong)NSString *appName;
-@property(nonatomic,strong)NSString *appSchema;
+@property(nonatomic,strong)WSApp *appModel;
+
 
 
 //ui
@@ -27,6 +27,7 @@
 - (void)scaleWhenSelect:(BOOL)toBig; //选中之后变大还是恢复
 - (void)setGrayMaskHidden:(BOOL)hidden;
 - (CGPoint)moveToLocation:(CGPoint)targetLocation inLocation:(CGPoint)inLocation;
+ 
 
 - (void)dismiss;
 
