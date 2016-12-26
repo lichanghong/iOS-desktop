@@ -55,7 +55,7 @@
     setX(view2, KScreenWidth);
     view2.group = 1;
     view2.backgroundColor = [UIColor blackColor];
-
+    
     [self.bgScrollView addSubview:view2];
     //第三个 View
     WSViewContent *view3 =[WSViewContent createWSVC];
@@ -73,7 +73,13 @@
     
     [self.view addSubview:self.pageControl];
     
+    [view1 refreshContent];
+    [view2 refreshContent];
+    [view3 refreshContent];
+
+    
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"shakejaklfjsdklfjdslfjsfksk" object:nil];
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"pushtogroup" object:nil];
     
     // Do any additional setup after loading the view, typically from a nib.
 }
@@ -81,11 +87,21 @@
 - (void)handleAction:(id)sender
 {
     if ([sender isKindOfClass:[NSNotification class]]) {
-        //颤动所有小图标
-        for (WSViewContent *content in self.viewContents) {
-            for (WSAppItem *item in content.appItems) {
-                [item shake:YES];
+        NSNotification *notifi = sender;
+        if ([notifi.name isEqualToString:@"shakejaklfjsdklfjdslfjsfksk"]) {
+            //颤动所有小图标
+            for (WSViewContent *content in self.viewContents) {
+                for (WSAppItem *item in content.appItems) {
+                    [item shake:YES];
+                }
             }
+        }
+        else if([notifi.name isEqualToString:@"pushtogroup"])
+        {
+            NSDictionary *dic = notifi.userInfo;
+            NSString *side = [dic objectForKey:@"side"];
+            NSString *group = [dic objectForKey:@"group"];
+            NSLog(@"side = %@  group = %@",side,group);
         }
     }
 }

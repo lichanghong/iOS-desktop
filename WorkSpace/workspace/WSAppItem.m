@@ -139,18 +139,35 @@ static CGPoint inLocation; //item里面的point需要是初始值，如果一直
         
         //动态获取行列数
         int row=ROW,column=COLUMN;
+        int hasIconCount = 0;
         for (WSBaseItemBG *baseItemBG in parentV.baseItemBGs) {
+            if (baseItemBG.appModel.hasItem) {
+                hasIconCount++;
+            }
             if (CGRectContainsPoint(baseItemBG.frame, itemlocation)) {
                 lasIndex = baseItemBG.appModel.index;
             }
         }
-        if (preIndex < lasIndex || preIndex > lasIndex)
+        //如果超过图标数，范围内图标前移，拖动的图标放在最后
+        if (hasIconCount-1 < lasIndex) { //拖动到所有图标之外，拖动的图标放在最后
+            for (WSAppItem *item in parentV.appItems) {
+                if (item.appModel.index>preIndex) {
+                    item.appModel.index--;
+                }
+            }
+            self.appModel.index = hasIconCount-1;
+        }
+        else if (preIndex < lasIndex || preIndex > lasIndex)
         {
             //后面的图标往前移动
             for (int i=0; i<row; i++) {
                 for (int j=0; j<column; j++) {
                     int index = i*column+j;
+                    WSBaseItemBG *baseItem = [parentV.baseItemBGs objectAtIndex:index];
                     //所有需要前移的图标位置
+                    if (!baseItem.appModel.hasItem) {
+                        continue;
+                    }
                     WSAppItem *appitem = [parentV.appItems objectAtIndex:index];
                     //从上往下拖动图标
                     if (index>=preIndex && index<=lasIndex) {
@@ -177,36 +194,36 @@ static CGPoint inLocation; //item里面的point需要是初始值，如果一直
                     }
                 }
             }
-            //重新排序之后需要把数组元素重新排序
-           NSArray *sortedArr = [parentV.appItems sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-                WSAppItem *item1 = obj1;
-                WSAppItem *item2 = obj2;
-                if (item1.appModel.index<item2.appModel.index) {
-                    return NSOrderedAscending;
-                }
-                return NSOrderedDescending;
-            }];
-            parentV.appItems = [NSMutableArray arrayWithArray:sortedArr];
-            for (WSAppItem *appItem in parentV.appItems) {
-                for (WSBaseItemBG *baseItemBG in parentV.baseItemBGs) {
-                    if (baseItemBG.appModel.index == appItem.appModel.index) {
-                        
-                        [UIView animateWithDuration:0.2 animations:^{
-                            appItem.center = baseItemBG.center;
-                            [parentV bringSubviewToFront:appItem];
-                        }];
-                    }
-                }
-            }
-            
-            
-            
         }
         else if(preIndex == lasIndex)
         {
             [UIView animateWithDuration:0.1 animations:^{
                 self.center = itemCenter;
             }];
+        }
+        //重新排序之后需要把数组元素重新排序
+        NSArray *sortedArr = [parentV.appItems sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            WSAppItem *item1 = obj1;
+            WSAppItem *item2 = obj2;
+            if (item1.appModel.index<item2.appModel.index) {
+                return NSOrderedAscending;
+            }
+            return NSOrderedDescending;
+        }];
+        for (WSAppItem *item in sortedArr) {
+            NSLog(@"appindex = %ld",item.appModel.index);
+        }
+        parentV.appItems = [NSMutableArray arrayWithArray:sortedArr];
+        for (WSAppItem *appItem in parentV.appItems) {
+            for (WSBaseItemBG *baseItemBG in parentV.baseItemBGs) {
+                if (baseItemBG.appModel.index == appItem.appModel.index) {
+                    
+                    [UIView animateWithDuration:0.2 animations:^{
+                        appItem.center = baseItemBG.center;
+                        [parentV bringSubviewToFront:appItem];
+                    }];
+                }
+            }
         }
     }
 }
@@ -242,9 +259,25 @@ static CGPoint inLocation; //item里面的point需要是初始值，如果一直
         [UIView animateWithDuration:0.1 animations:^{
             self.center = center;
         }];
+        
+        //拖动到边缘就翻页
+        NSString *side = @"";
+        if (targetLocation.x > [UIScreen mainScreen].bounds.size.width-4) {
+            NSLog(@"到右边缘了.............");
+            side = @"1";
+            NSDictionary *dic = [NSDictionary dictionaryWithObjectsAndKeys:@(self.appModel.group),@"group",side,@"side", nil];
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"pushtogroup" object:nil userInfo:dic];
+        }
+        else if(targetLocation.x < 4)
+        {
+            NSLog(@"到左边缘了.............");
+            side = @"0";
+            NSDictionary *dic = [NSDictionary dictionaryWithObjectsAndKeys:@(self.appModel.group),@"group",side,@"side", nil];
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"pushtogroup" object:nil userInfo:dic];
+        }
     }
 }
- 
+
 
 - (void)handleAction:(UIButton *)sender WithEvent:(UIEvent *)event
 {

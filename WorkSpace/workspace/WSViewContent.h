@@ -16,6 +16,7 @@
 @interface WSApp : NSObject
 @property(nonatomic,assign)NSInteger group;
 @property(nonatomic,assign)NSInteger index;
+@property(nonatomic,assign)BOOL      hasItem;  //有无图标
 @property(nonatomic,strong)NSString *appName;
 @property(nonatomic,strong)NSString *appSchema;
 @end
@@ -33,7 +34,7 @@
 @property (nonatomic,strong)NSMutableArray *appItems;
 
 + (WSViewContent *)createWSVC;
- 
+- (void)refreshContent;
 
 - (void)dismiss;
 

@@ -45,47 +45,54 @@
 + (WSViewContent *)createWSVC
 {
     WSViewContent *vc = [[WSViewContent alloc]initWithFrame:KScreenRect];
+    return vc;
+}
+
+- (void)refreshContent
+{
+    WSViewContent *vc = self;
     CGFloat margin = 12;  //最外边距
     CGFloat xpadding = 5; //图标间距
     CGFloat ypadding = 5; //图标间距
     CGFloat w        = (KScreenWidth-2*margin-(COLUMN-1)*xpadding)/COLUMN;
-
+    
     CGFloat marginBottom = 100;
     CGFloat marginTop = 30;
-  
+    
     CGFloat h        =( KScreenHeight-ypadding*(ROW-1) - marginBottom - marginTop)/ROW;
     CGFloat fy = KScreenHeight - h*ROW - ypadding*(ROW-1) - marginBottom;
-
+    
     vc.baseItemBGs = [NSMutableArray array];
     vc.appItems = [NSMutableArray array];
     for (int i=0; i<ROW; i++) {
         for (int j=0; j<COLUMN; j++) {
             WSBaseItemBG *ibview = [[WSBaseItemBG alloc]init]; //item background view
             ibview.frame = CGRectMake(margin+(xpadding+w)*j, fy+(i*(h+ypadding)), w, h);
-            ibview.backgroundColor = [UIColor greenColor];
+            ibview.backgroundColor = [UIColor clearColor];
             ibview.appModel.index = i*COLUMN+j;
+            ibview.appModel.group = self.group;
             [vc addSubview:ibview];
             [vc.baseItemBGs addObject:ibview];
-            
-            WSAppItem *v = [WSAppItem createItemWithFrame:
-                          CGRectMake(margin+(xpadding+w)*j, fy+(i*(h+ypadding)), w, h)];
-            v.appModel.index = i*COLUMN+j;
             NSString *imagename = [NSString stringWithFormat:@"00%ld",(i*ROW+j)+19*vc.group];
-//            NSLog(@"index = %ld",ibview.index);
-            v.image.image = [UIImage imageNamed:imagename];
-            v.label.text = NSStringFromCGPoint(CGPointMake(i,j));
-            [vc addSubview:v];
-            [vc.appItems addObject:v];
-
-            UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:vc action:@selector(handleAction:)];
-            longPressRecognizer.minimumPressDuration = 1;
-            longPressRecognizer.delegate = vc;
-            [v addGestureRecognizer:longPressRecognizer];
-        
+            UIImage *image = [UIImage imageNamed:imagename];
+            if (image) {
+                WSAppItem *v = [WSAppItem createItemWithFrame:
+                                CGRectMake(margin+(xpadding+w)*j, fy+(i*(h+ypadding)), w, h)];
+                v.appModel.index = i*COLUMN+j;
+                v.image.image = image;
+                v.label.text = NSStringFromCGPoint(CGPointMake(i,j));
+                [vc addSubview:v];
+                [vc.appItems addObject:v];
+                ibview.appModel.hasItem = YES;
+                UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:vc action:@selector(handleAction:)];
+                longPressRecognizer.minimumPressDuration = 1;
+                longPressRecognizer.delegate = vc;
+                [v addGestureRecognizer:longPressRecognizer];
+            }
         }
     }
-    return vc;
 }
+
 
 static CGPoint itemCenter; //拖动的item的坐标中心 in contentview
 static CGPoint inLocationb; //item里面的point需要是初始值，如果一直变化则因坐标不确定而出问题
@@ -132,17 +139,36 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                 NSInteger lasIndex = appitem.appModel.index;
                 
                 int row=ROW,column=COLUMN;
+                int hasIconCount = 0;
                 for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
+                    if (baseItemBG.appModel.hasItem) {
+                        hasIconCount++;
+                    }
                     if (CGRectContainsPoint(baseItemBG.frame, itemlocation)) {
                         lasIndex = baseItemBG.appModel.index;
                     }
                 }
-                if (preIndex < lasIndex || preIndex > lasIndex)
+                //如果超过图标数，范围内图标前移，拖动的图标放在最后
+                if (hasIconCount-1 < lasIndex) { //拖动到所有图标之外，拖动的图标放在最后
+                    for (WSAppItem *item in self.appItems) {
+                        if (item.appModel.index>preIndex) {
+                            item.appModel.index--;
+                        }
+                    }
+                    appitem.appModel.index = hasIconCount-1;
+                }
+                else  if (preIndex < lasIndex || preIndex > lasIndex)
                 {
                     //后面的图标往前移动
                     for (int i=0; i<row; i++) {
                         for (int j=0; j<column; j++) {
                             int index = i*column+j;
+                            WSBaseItemBG *baseItem = [self.baseItemBGs objectAtIndex:index];
+                            //所有需要前移的图标位置
+                            if (!baseItem.appModel.hasItem) {
+                                continue;
+                            }
+
                             //所有需要前移的图标位置
                             WSAppItem *appitem = [self.appItems objectAtIndex:index];
                             //从上往下拖动图标
@@ -170,28 +196,6 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                             }
                         }
                     }
-                    //重新排序之后需要把数组元素重新排序
-                    NSArray *sortedArr = [self.appItems sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-                        WSAppItem *item1 = obj1;
-                        WSAppItem *item2 = obj2;
-                        if (item1.appModel.index<item2.appModel.index) {
-                            return NSOrderedAscending;
-                        }
-                        return NSOrderedDescending;
-                    }];
-                    self.appItems = [NSMutableArray arrayWithArray:sortedArr];
-                    for (WSAppItem *appItem in self.appItems) {
-                        for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
-                            if (baseItemBG.appModel.index == appItem.appModel.index) {
-                                
-                                [UIView animateWithDuration:0.2 animations:^{
-                                    appItem.center = baseItemBG.center;
-                                    [self bringSubviewToFront:appItem];
-                                }];
-                            }
-                        }
-                    }
-                    
                 }
                 else if(preIndex == lasIndex)
                 {
@@ -199,7 +203,27 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                         appitem.center = itemCenter;
                     }];
                 }
-    
+                //重新排序之后需要把数组元素重新排序
+                NSArray *sortedArr = [self.appItems sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+                    WSAppItem *item1 = obj1;
+                    WSAppItem *item2 = obj2;
+                    if (item1.appModel.index<item2.appModel.index) {
+                        return NSOrderedAscending;
+                    }
+                    return NSOrderedDescending;
+                }];
+                self.appItems = [NSMutableArray arrayWithArray:sortedArr];
+                for (WSAppItem *appItem in self.appItems) {
+                    for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
+                        if (baseItemBG.appModel.index == appItem.appModel.index) {
+                            
+                            [UIView animateWithDuration:0.2 animations:^{
+                                appItem.center = baseItemBG.center;
+                                [self bringSubviewToFront:appItem];
+                            }];
+                        }
+                    }
+                }
             }
         }
        
