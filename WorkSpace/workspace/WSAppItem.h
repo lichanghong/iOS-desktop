@@ -7,8 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "WSViewContent.h"
-
+#import "WSViewController.h"
 
 @interface WSAppItem : UIView<UIGestureRecognizerDelegate>
 //model

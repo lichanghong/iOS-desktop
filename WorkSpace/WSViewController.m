@@ -7,34 +7,24 @@
 //
 
 #import "WSViewController.h"
-#import "WSViewContent.h"
 #import "WSAppItem.h"
 
+@implementation WSBaseItemBG
+- (WSApp *)appModel
+{
+    if (!_appModel) {
+        _appModel = [[WSApp alloc]init];
+    }
+    return _appModel;
+}
+@end
 
-//frame
-#define KScreenWidth            [[UIScreen mainScreen] bounds].size.width
-#define KScreenHeight           [[UIScreen mainScreen] bounds].size.height
-#define KScreenRect             [[UIScreen mainScreen] bounds]
-#define ViewW(v)                (v).frame.size.width
-#define ViewH(v)                (v).frame.size.height
-#define ViewX(v)                (v).frame.origin.x
-#define ViewY(v)                (v).frame.origin.y
-#define MinX(v)                 CGRectGetMinX((v).frame)
-#define MinY(v)                 CGRectGetMinY((v).frame)
-#define MaxX(v)                 CGRectGetMaxX((v).frame)
-#define MaxY(v)                 CGRectGetMaxY((v).frame)
-#define setX(v,x)   v.frame=CGRectMake(x, v.frame.origin.y , v.frame.size.width, v.frame.size.height)
-#define setY(v,y)   v.frame=CGRectMake(v.frame.origin.x, y , v.frame.size.width, v.frame.size.height)
-#define setW(v,w)   v.frame=CGRectMake(v.frame.origin.x,v.frame.origin.y, w, v.frame.size.height)
-#define setH(v,h)   v.frame=CGRectMake(v.frame.origin.x,v.frame.origin.y, v.frame.size.width, h)
-
-
+@implementation WSApp
+@end
+ 
 @interface WSViewController ()<UIScrollViewDelegate>
-
-@property (nonatomic,strong)NSMutableArray *viewContents;
 @property (nonatomic,strong)UIScrollView *bgScrollView;
 @property (nonatomic,strong)UIPageControl *pageControl;
-
 
 @end
 
@@ -47,75 +37,11 @@
     [self.pageControl setCurrentPageIndicatorTintColor:[UIColor whiteColor]];
     [self.pageControl setPageIndicatorTintColor:[UIColor lightGrayColor]];
     [self.pageControl setNumberOfPages:3];
-    //向 ScrollView 中加入第一个 View，View 的宽度 200 加上两边的空隙 5 等于 ScrollView 的宽度
-    WSViewContent *view1 = [WSViewContent createWSVC];
-    view1.backgroundColor = [UIColor blackColor];
-    view1.group = 0;
-    [self.bgScrollView addSubview:view1];
-    //第二个 View，它的宽度加上两边的空隙 5 等于 ScrollView 的宽度，两个 View 间有 10 的间距
-    WSViewContent*view2 = [WSViewContent createWSVC];
-    setX(view2, KScreenWidth);
-    view2.group = 1;
-    view2.backgroundColor = [UIColor blackColor];
-    
-    [self.bgScrollView addSubview:view2];
-    //第三个 View
-    WSViewContent *view3 =[WSViewContent createWSVC];
-    view3.backgroundColor = [UIColor blackColor];
-    view3.group = 2;
-    setX(view3, KScreenWidth*2);
-
-    [_bgScrollView addSubview:view3];
     [self.view addSubview:self.bgScrollView];
-    
-    
-    [self.viewContents addObject:view1];
-    [self.viewContents addObject:view2];
-    [self.viewContents addObject:view3];
-    
     [self.view addSubview:self.pageControl];
     
-    [view1 refreshContent];
-    [view2 refreshContent];
-    [view3 refreshContent];
-
-    
-    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"shakejaklfjsdklfjdslfjsfksk" object:nil];
-    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"pushtogroup" object:nil];
-    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"btntouchup" object:nil];
-    
+    [self refreshContent];
     // Do any additional setup after loading the view, typically from a nib.
-}
-
-- (void)handleAction:(id)sender
-{
-    if ([sender isKindOfClass:[NSNotification class]]) {
-        NSNotification *notifi = sender;
-        if ([notifi.name isEqualToString:@"shakejaklfjsdklfjdslfjsfksk"]) {
-            //颤动所有小图标
-            for (WSViewContent *content in self.viewContents) {
-                for (WSAppItem *item in content.appItems) {
-                    [item shake:YES];
-                }
-            }
-        }
-        else if([notifi.name isEqualToString:@"pushtogroup"])
-        {
-            NSDictionary *dic = notifi.userInfo;
-            NSString *side = [dic objectForKey:@"side"];
-            WSAppItem *appItem = [dic objectForKey:@"appitem"];
-            WSViewContent *parentV = appItem.superview;
-            [[NSNotificationCenter defaultCenter]removeObserver:self name:@"pushtogroup" object:nil];
-            NSLog(@"side = %@  group = %ld",side,appItem.appModel.group);
-            [self moveToSide:[side isEqualToString:@"0"] Group:(int)appItem.appModel.group];
-            [appItem removeFromSuperview];
-            
-        }
-        else if([notifi.name isEqualToString:@"btntouchup"])
-        {
-            [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"pushtogroup" object:nil];
-        }
-    }
 }
 
 - (void)moveToSide:(BOOL)isleft Group:(int)group
@@ -174,6 +100,197 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+- (void)refreshContent
+{
+    CGFloat margin = 12;  //最外边距
+    CGFloat xpadding = 5; //图标间距
+    CGFloat ypadding = 5; //图标间距
+    CGFloat w        = (KScreenWidth-2*margin-(COLUMN-1)*xpadding)/COLUMN;
+    
+    CGFloat marginBottom = 100;
+    CGFloat marginTop = 30;
+    
+    CGFloat h        =( KScreenHeight-ypadding*(ROW-1) - marginBottom - marginTop)/ROW;
+    CGFloat fy = KScreenHeight - h*ROW - ypadding*(ROW-1) - marginBottom;
+    
+    self.baseItemBGs = [NSMutableArray array];
+    self.appItems = [NSMutableArray array];
+    for (int g=0; g<3; g++) {
+        for (int i=0; i<ROW; i++) {
+            for (int j=0; j<COLUMN; j++) {
+                WSBaseItemBG *ibview = [[WSBaseItemBG alloc]init]; //item background view
+                ibview.frame = CGRectMake((margin+(xpadding+w)*j)+g*KScreenWidth, fy+(i*(h+ypadding)), w, h);
+                ibview.backgroundColor = [UIColor greenColor];
+                ibview.appModel.index = i*COLUMN+j;
+                ibview.appModel.group = g;
+                [self.bgScrollView addSubview:ibview];
+                [self.baseItemBGs addObject:ibview];
+                NSString *imagename = [NSString stringWithFormat:@"00%d",(i*ROW+j)+19*g];
+                UIImage *image = [UIImage imageNamed:imagename];
+                NSLog(@"iamgename = %@",imagename);
+                if (image) {
+                    WSAppItem *v = [WSAppItem createItemWithFrame:
+                                    CGRectMake(margin+(xpadding+w)*j+KScreenWidth*g, fy+(i*(h+ypadding)), w, h)];
+                    v.appModel.index = i*COLUMN+j;
+                    v.appModel.group = g;
+                    v.image.image = image;
+                    v.label.text = [NSString stringWithFormat:@"%ld",v.appModel.index];
+                    [self.bgScrollView addSubview:v];
+                    [self.appItems addObject:v];
+                    ibview.appModel.hasItem = YES;
+                    UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleAction:)];
+                    longPressRecognizer.minimumPressDuration = 1;
+                    longPressRecognizer.delegate = self;
+                    [v addGestureRecognizer:longPressRecognizer];
+                }
+            }
+        }
+        
+    }
+}
+
+
+static CGPoint itemCenter; //拖动的item的坐标中心 in contentview
+static CGPoint inLocationb; //item里面的point需要是初始值，如果一直变化则因坐标不确定而出问题
+- (void)handleAction:(id)sender
+{
+    if ([sender isKindOfClass:[UIGestureRecognizer class]]) {
+        if ([sender isKindOfClass:[UILongPressGestureRecognizer class]]) {
+            //通知所有的item shake
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"shakejaklfjsdklfjdslfjsfksk" object:sender];
+            UILongPressGestureRecognizer *longpress = sender;
+            WSAppItem *appitem = (id)longpress.view;
+            CGPoint center         = CGPointZero;
+            CGPoint targetLocation = [longpress locationInView:self.bgScrollView];
+            
+            //长按拖动的坐标
+            if (longpress.state == UIGestureRecognizerStateBegan) {
+                [appitem scaleWhenSelect:YES];
+                inLocationb     = [longpress locationInView:appitem.button];
+                //找出itemCenter ，在移动item的时候判断中点是否在自己域内
+                for (WSBaseItemBG *itembg in self.baseItemBGs) {
+                    if (itembg.appModel.index == appitem.appModel.index) {
+                        itemCenter = itembg.center;
+                        break;
+                    }
+                }
+            }
+            else if(longpress.state == UIGestureRecognizerStateChanged)
+            {
+                center =  [appitem moveToLocation:targetLocation inLocation:inLocationb];
+                [UIView animateWithDuration:0.1 animations:^{
+                    appitem.center = center;
+                }];
+                [appitem.superview bringSubviewToFront: appitem];
+                //                NSLog(@"GestureRecognizerStateChanged---%@-",NSStringFromCGPoint(center));
+                
+            }
+            else if(longpress.state == UIGestureRecognizerStateEnded)
+            {
+                NSLog(@"UIGestureRecognizerStateEnded---------");
+                [appitem setGrayMaskHidden:YES];
+                
+                NSInteger preIndex = appitem.appModel.index; //拖走留下的空
+                CGPoint itemlocation = [longpress locationInView:self.bgScrollView];
+                NSInteger lasIndex = appitem.appModel.index;
+                
+                int row=ROW,column=COLUMN;
+                int hasIconCount = 0;
+                for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
+                    if (baseItemBG.appModel.hasItem) {
+                        hasIconCount++;
+                    }
+                    if (CGRectContainsPoint(baseItemBG.frame, itemlocation)) {
+                        lasIndex = baseItemBG.appModel.index;
+                    }
+                }
+                //如果超过图标数，范围内图标前移，拖动的图标放在最后
+                if (hasIconCount-1 < lasIndex) { //拖动到所有图标之外，拖动的图标放在最后
+                    for (WSAppItem *item in self.appItems) {
+                        if (item.appModel.index>preIndex) {
+                            item.appModel.index--;
+                        }
+                    }
+                    appitem.appModel.index = hasIconCount-1;
+                }
+                else  if (preIndex < lasIndex || preIndex > lasIndex)
+                {
+                    //后面的图标往前移动
+                    for (int i=0; i<row; i++) {
+                        for (int j=0; j<column; j++) {
+                            int index = i*column+j;
+                            WSBaseItemBG *baseItem = [self.baseItemBGs objectAtIndex:index];
+                            //所有需要前移的图标位置
+                            if (!baseItem.appModel.hasItem) {
+                                continue;
+                            }
+                            
+                            //所有需要前移的图标位置
+                            WSAppItem *appitem = [self.appItems objectAtIndex:index];
+                            //从上往下拖动图标
+                            if (index>=preIndex && index<=lasIndex) {
+                                //所有前移
+                                if (index == preIndex) {
+                                    appitem.appModel.index = lasIndex;
+                                }
+                                else
+                                {
+                                    appitem.appModel.index -= 1;
+                                }
+                            }
+                            //从下往上拖动图标
+                            else if(index>=lasIndex && index <= preIndex)
+                            {
+                                //所有后移
+                                if (index == preIndex) {
+                                    appitem.appModel.index = lasIndex;
+                                }
+                                else
+                                {
+                                    appitem.appModel.index += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if(preIndex == lasIndex)
+                {
+                    [UIView animateWithDuration:0.1 animations:^{
+                        appitem.center = itemCenter;
+                    }];
+                }
+                //重新排序之后需要把数组元素重新排序
+                NSArray *sortedArr = [self.appItems sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+                    WSAppItem *item1 = obj1;
+                    WSAppItem *item2 = obj2;
+                    if (item1.appModel.index<item2.appModel.index) {
+                        return NSOrderedAscending;
+                    }
+                    return NSOrderedDescending;
+                }];
+                self.appItems = [NSMutableArray arrayWithArray:sortedArr];
+                for (WSAppItem *appItem in self.appItems) {
+                    for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
+                        if (baseItemBG.appModel.index == appItem.appModel.index) {
+                            
+                            [UIView animateWithDuration:0.2 animations:^{
+                                appItem.center = baseItemBG.center;
+                                [self.bgScrollView bringSubviewToFront:appItem];
+                            }];
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+    else
+        NSLog(@"%s",__func__);
+}
+
+
+ 
 
 
 @end

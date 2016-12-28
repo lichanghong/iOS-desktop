@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		95370A221E0A5D5500DCC79D /* WSViewContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 95370A211E0A5D5500DCC79D /* WSViewContent.m */; };
 		95370A251E0A761B00DCC79D /* WSAppItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 95370A241E0A761B00DCC79D /* WSAppItem.m */; };
 		95370A271E0A797900DCC79D /* applogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 95370A261E0A797900DCC79D /* applogo.png */; };
 		956AEDD31DFA613A000AE2D4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 956AEDD21DFA613A000AE2D4 /* main.m */; };
@@ -19,8 +18,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		95370A201E0A5D5500DCC79D /* WSViewContent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WSViewContent.h; path = workspace/WSViewContent.h; sourceTree = "<group>"; };
-		95370A211E0A5D5500DCC79D /* WSViewContent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WSViewContent.m; path = workspace/WSViewContent.m; sourceTree = "<group>"; };
 		95370A231E0A761B00DCC79D /* WSAppItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WSAppItem.h; path = workspace/WSAppItem.h; sourceTree = "<group>"; };
 		95370A241E0A761B00DCC79D /* WSAppItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = WSAppItem.m; path = workspace/WSAppItem.m; sourceTree = "<group>"; };
 		95370A261E0A797900DCC79D /* applogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = applogo.png; sourceTree = "<group>"; };
@@ -71,8 +68,6 @@
 				956AEDD51DFA613A000AE2D4 /* AppDelegate.m */,
 				956AEDD71DFA613A000AE2D4 /* WSViewController.h */,
 				956AEDD81DFA613A000AE2D4 /* WSViewController.m */,
-				95370A201E0A5D5500DCC79D /* WSViewContent.h */,
-				95370A211E0A5D5500DCC79D /* WSViewContent.m */,
 				95370A231E0A761B00DCC79D /* WSAppItem.h */,
 				95370A241E0A761B00DCC79D /* WSAppItem.m */,
 				956AEDDA1DFA613A000AE2D4 /* Main.storyboard */,
@@ -168,7 +163,6 @@
 				95370A251E0A761B00DCC79D /* WSAppItem.m in Sources */,
 				956AEDD91DFA613A000AE2D4 /* WSViewController.m in Sources */,
 				956AEDD61DFA613A000AE2D4 /* AppDelegate.m in Sources */,
-				95370A221E0A5D5500DCC79D /* WSViewContent.m in Sources */,
 				956AEDD31DFA613A000AE2D4 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
