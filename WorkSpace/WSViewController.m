@@ -6,7 +6,7 @@
 //  Copyright © 2016年 lichanghong. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "WSViewController.h"
 #import "WSViewContent.h"
 #import "WSAppItem.h"
 
@@ -27,7 +27,9 @@
 #define setY(v,y)   v.frame=CGRectMake(v.frame.origin.x, y , v.frame.size.width, v.frame.size.height)
 #define setW(v,w)   v.frame=CGRectMake(v.frame.origin.x,v.frame.origin.y, w, v.frame.size.height)
 #define setH(v,h)   v.frame=CGRectMake(v.frame.origin.x,v.frame.origin.y, v.frame.size.width, h)
-@interface ViewController ()<UIScrollViewDelegate>
+
+
+@interface WSViewController ()<UIScrollViewDelegate>
 
 @property (nonatomic,strong)NSMutableArray *viewContents;
 @property (nonatomic,strong)UIScrollView *bgScrollView;
@@ -36,7 +38,7 @@
 
 @end
 
-@implementation ViewController
+@implementation WSViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -80,6 +82,7 @@
     
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"shakejaklfjsdklfjdslfjsfksk" object:nil];
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"pushtogroup" object:nil];
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"btntouchup" object:nil];
     
     // Do any additional setup after loading the view, typically from a nib.
 }
@@ -100,10 +103,36 @@
         {
             NSDictionary *dic = notifi.userInfo;
             NSString *side = [dic objectForKey:@"side"];
-            NSString *group = [dic objectForKey:@"group"];
-            NSLog(@"side = %@  group = %@",side,group);
+            WSAppItem *appItem = [dic objectForKey:@"appitem"];
+            WSViewContent *parentV = appItem.superview;
+            [[NSNotificationCenter defaultCenter]removeObserver:self name:@"pushtogroup" object:nil];
+            NSLog(@"side = %@  group = %ld",side,appItem.appModel.group);
+            [self moveToSide:[side isEqualToString:@"0"] Group:(int)appItem.appModel.group];
+            [appItem removeFromSuperview];
+            
+        }
+        else if([notifi.name isEqualToString:@"btntouchup"])
+        {
+            [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleAction:) name:@"pushtogroup" object:nil];
         }
     }
+}
+
+- (void)moveToSide:(BOOL)isleft Group:(int)group
+{
+    int currentPage = group;
+    if (isleft) {
+        currentPage-=1;
+    }
+    else
+    {
+        currentPage+=1;
+    }
+//    _pageControl.currentPage = currentPage;
+//    [self.bgScrollView setContentOffset:CGPointMake(currentPage*KScreenWidth, 0) animated:YES];
+    
+    
+    
 }
 
 - (void)dealloc

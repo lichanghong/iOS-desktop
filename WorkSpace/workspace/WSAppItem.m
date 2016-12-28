@@ -26,11 +26,9 @@
     [item initUIWithFrame:frame];
     
     item.button = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
-    [item.button addTarget:item action:@selector(btnTouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
-    [item.button addTarget:item action:@selector(btnTouchUp:withEvent:) forControlEvents:UIControlEventTouchUpInside|UIControlEventTouchUpOutside];
-    [item.button addTarget:item action:@selector(btnDragged:withEvent:) forControlEvents:UIControlEventTouchDragInside];
-    [item.button addTarget:item action:@selector(btnDragged:withEvent:) forControlEvents:UIControlEventTouchDragOutside];
-
+    item.image.layer.cornerRadius = frame.size.width/5.5;
+    [item.image.layer setMasksToBounds:YES];
+   
     [item addSubview:item.image];
     [item addSubview:item.label];
     [item addSubview:item.button]; 
@@ -103,131 +101,6 @@
 
 }
 
-
-static CGPoint itemCenter; //拖动的item的坐标中心 in contentview
-static CGPoint inLocation; //item里面的point需要是初始值，如果一直变化则因坐标不确定而出问题
-- (void)btnTouchDown:(UIButton *)sender withEvent:(UIEvent *)event
-{
-    if ([self isAnimation]) {
-        //正在动画点击，视图变大且可滑动
-        NSLog(@" sender = touchdown");
-        WSViewContent *parentV = (id)self.superview;
-        [self setGrayMaskHidden:NO];
-        [parentV bringSubviewToFront:self];
-        UITouch *touch = [[event allTouches] anyObject];
-        inLocation     = [touch locationInView:self.button];
-        //找出itemCenter ，在移动item的时候判断中点是否在自己域内
-        for (WSBaseItemBG *itembg in parentV.baseItemBGs) {
-            if (itembg.appModel.index == self.appModel.index) {
-                itemCenter = itembg.center;
-                break;
-            }
-        }
-    }
-}
-- (void)btnTouchUp:(UIButton *)sender withEvent:(UIEvent *)event
-{
-    if ([self isAnimation]) {
-        NSLog(@"btnTouchUp ---------------");
-        [self setGrayMaskHidden:YES];
-        WSViewContent *parentV =(id)self.superview;
-        UITouch *touch = [[event allTouches] anyObject];
-        
-        NSInteger preIndex = self.appModel.index; //拖走留下的空
-        CGPoint itemlocation = [touch locationInView:parentV];
-        NSInteger lasIndex = 0;
-        
-        //动态获取行列数
-        int row=ROW,column=COLUMN;
-        int hasIconCount = 0;
-        for (WSBaseItemBG *baseItemBG in parentV.baseItemBGs) {
-            if (baseItemBG.appModel.hasItem) {
-                hasIconCount++;
-            }
-            if (CGRectContainsPoint(baseItemBG.frame, itemlocation)) {
-                lasIndex = baseItemBG.appModel.index;
-            }
-        }
-        //如果超过图标数，范围内图标前移，拖动的图标放在最后
-        if (hasIconCount-1 < lasIndex) { //拖动到所有图标之外，拖动的图标放在最后
-            for (WSAppItem *item in parentV.appItems) {
-                if (item.appModel.index>preIndex) {
-                    item.appModel.index--;
-                }
-            }
-            self.appModel.index = hasIconCount-1;
-        }
-        else if (preIndex < lasIndex || preIndex > lasIndex)
-        {
-            //后面的图标往前移动
-            for (int i=0; i<row; i++) {
-                for (int j=0; j<column; j++) {
-                    int index = i*column+j;
-                    WSBaseItemBG *baseItem = [parentV.baseItemBGs objectAtIndex:index];
-                    //所有需要前移的图标位置
-                    if (!baseItem.appModel.hasItem) {
-                        continue;
-                    }
-                    WSAppItem *appitem = [parentV.appItems objectAtIndex:index];
-                    //从上往下拖动图标
-                    if (index>=preIndex && index<=lasIndex) {
-                        //所有前移
-                        if (index == preIndex) {
-                            appitem.appModel.index = lasIndex;
-                        }
-                        else
-                        {
-                            appitem.appModel.index -= 1;
-                        }
-                    }
-                    //从下往上拖动图标
-                    else if(index>=lasIndex && index <= preIndex)
-                    {
-                        //所有后移
-                        if (index == preIndex) {
-                            appitem.appModel.index = lasIndex;
-                        }
-                        else
-                        {
-                            appitem.appModel.index += 1;
-                        }
-                    }
-                }
-            }
-        }
-        else if(preIndex == lasIndex)
-        {
-            [UIView animateWithDuration:0.1 animations:^{
-                self.center = itemCenter;
-            }];
-        }
-        //重新排序之后需要把数组元素重新排序
-        NSArray *sortedArr = [parentV.appItems sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-            WSAppItem *item1 = obj1;
-            WSAppItem *item2 = obj2;
-            if (item1.appModel.index<item2.appModel.index) {
-                return NSOrderedAscending;
-            }
-            return NSOrderedDescending;
-        }];
-        for (WSAppItem *item in sortedArr) {
-            NSLog(@"appindex = %ld",item.appModel.index);
-        }
-        parentV.appItems = [NSMutableArray arrayWithArray:sortedArr];
-        for (WSAppItem *appItem in parentV.appItems) {
-            for (WSBaseItemBG *baseItemBG in parentV.baseItemBGs) {
-                if (baseItemBG.appModel.index == appItem.appModel.index) {
-                    
-                    [UIView animateWithDuration:0.2 animations:^{
-                        appItem.center = baseItemBG.center;
-                        [parentV bringSubviewToFront:appItem];
-                    }];
-                }
-            }
-        }
-    }
-}
-
 - (void)setGrayMaskHidden:(BOOL)hidden
 {
     if (hidden) {
@@ -245,37 +118,6 @@ static CGPoint inLocation; //item里面的point需要是初始值，如果一直
     CGFloat x = targetLocation.x - (inLocation.x-self.bounds.size.width/2.0);
     CGFloat y = targetLocation.y - (inLocation.y-self.bounds.size.height/2.0);
     return CGPointMake(x, y);
-}
-
-- (void)btnDragged:(UIButton *)sender withEvent:(UIEvent *)event
-{
-    if ([self isAnimation]) { //长按并拖动使用longpress处理，颤动之后使用此方法处理拖动
-        UITouch *touch = [[event allTouches] anyObject];
-        WSViewContent *parentV =(id)self.superview;
-        
-        CGPoint center       = CGPointZero;
-        CGPoint targetLocation = [touch locationInView:parentV];
-        center =  [self moveToLocation:targetLocation inLocation:inLocation];
-        [UIView animateWithDuration:0.1 animations:^{
-            self.center = center;
-        }];
-        
-        //拖动到边缘就翻页
-        NSString *side = @"";
-        if (targetLocation.x > [UIScreen mainScreen].bounds.size.width-4) {
-            NSLog(@"到右边缘了.............");
-            side = @"1";
-            NSDictionary *dic = [NSDictionary dictionaryWithObjectsAndKeys:@(self.appModel.group),@"group",side,@"side", nil];
-            [[NSNotificationCenter defaultCenter]postNotificationName:@"pushtogroup" object:nil userInfo:dic];
-        }
-        else if(targetLocation.x < 4)
-        {
-            NSLog(@"到左边缘了.............");
-            side = @"0";
-            NSDictionary *dic = [NSDictionary dictionaryWithObjectsAndKeys:@(self.appModel.group),@"group",side,@"side", nil];
-            [[NSNotificationCenter defaultCenter]postNotificationName:@"pushtogroup" object:nil userInfo:dic];
-        }
-    }
 }
 
 

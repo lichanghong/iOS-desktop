@@ -23,21 +23,6 @@
 @end
 
 
-#define KScreenWidth            [[UIScreen mainScreen] bounds].size.width
-#define KScreenHeight           [[UIScreen mainScreen] bounds].size.height
-#define KScreenRect             [[UIScreen mainScreen] bounds]
-#define ViewW(v)                (v).frame.size.width
-#define ViewH(v)                (v).frame.size.height
-#define ViewX(v)                (v).frame.origin.x
-#define ViewY(v)                (v).frame.origin.y
-#define MinX(v)                 CGRectGetMinX((v).frame)
-#define MinY(v)                 CGRectGetMinY((v).frame)
-#define MaxX(v)                 CGRectGetMaxX((v).frame)
-#define MaxY(v)                 CGRectGetMaxY((v).frame)
-#define setX(v,x)   v.frame=CGRectMake(x, v.frame.origin.y , v.frame.size.width, v.frame.size.height)
-#define setY(v,y)   v.frame=CGRectMake(v.frame.origin.x, y , v.frame.size.width, v.frame.size.height)
-#define setW(v,w)   v.frame=CGRectMake(v.frame.origin.x,v.frame.origin.y, w, v.frame.size.height)
-#define setH(v,h)   v.frame=CGRectMake(v.frame.origin.x,v.frame.origin.y, v.frame.size.width, h)
 
 
 @implementation WSViewContent
@@ -79,8 +64,9 @@
                 WSAppItem *v = [WSAppItem createItemWithFrame:
                                 CGRectMake(margin+(xpadding+w)*j, fy+(i*(h+ypadding)), w, h)];
                 v.appModel.index = i*COLUMN+j;
+                v.appModel.group = self.group;
                 v.image.image = image;
-                v.label.text = NSStringFromCGPoint(CGPointMake(i,j));
+                v.label.text = [NSString stringWithFormat:@"%ld",v.appModel.index];
                 [vc addSubview:v];
                 [vc.appItems addObject:v];
                 ibview.appModel.hasItem = YES;
