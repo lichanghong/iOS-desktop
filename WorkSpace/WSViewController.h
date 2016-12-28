@@ -29,9 +29,8 @@
 #define ROW    5
 
 @interface WSApp : NSObject
-@property(nonatomic,assign)NSInteger group;
-@property(nonatomic,assign)NSInteger index;
-@property(nonatomic,assign)BOOL      hasItem;  //有无图标
+@property(nonatomic,assign)int group;
+@property(nonatomic,assign)int index;
 @property(nonatomic,strong)NSString *appName;
 @property(nonatomic,strong)NSString *appSchema;
 @end

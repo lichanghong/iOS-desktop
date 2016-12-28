@@ -135,10 +135,9 @@
                     v.appModel.index = i*COLUMN+j;
                     v.appModel.group = g;
                     v.image.image = image;
-                    v.label.text = [NSString stringWithFormat:@"%ld",v.appModel.index];
+                    v.label.text = [NSString stringWithFormat:@"%d",v.appModel.index];
                     [self.bgScrollView addSubview:v];
                     [self.appItems addObject:v];
-                    ibview.appModel.hasItem = YES;
                     UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleAction:)];
                     longPressRecognizer.minimumPressDuration = 1;
                     longPressRecognizer.delegate = self;
@@ -175,6 +174,9 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                         break;
                     }
                 }
+                for (WSAppItem *item in self.appItems) {
+                    [item shake:YES];
+                }
             }
             else if(longpress.state == UIGestureRecognizerStateChanged)
             {
@@ -191,20 +193,29 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                 NSLog(@"UIGestureRecognizerStateEnded---------");
                 [appitem setGrayMaskHidden:YES];
                 
-                NSInteger preIndex = appitem.appModel.index; //拖走留下的空
+                int preIndex = appitem.appModel.index; //拖走留下的空
                 CGPoint itemlocation = [longpress locationInView:self.bgScrollView];
-                NSInteger lasIndex = appitem.appModel.index;
+                int lasIndex = appitem.appModel.index;
                 
                 int row=ROW,column=COLUMN;
                 int hasIconCount = 0;
+                int group = 3;
                 for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
-                    if (baseItemBG.appModel.hasItem) {
-                        hasIconCount++;
-                    }
-                    if (CGRectContainsPoint(baseItemBG.frame, itemlocation)) {
+                    if (CGRectContainsPoint(baseItemBG.frame, itemlocation))
+                    {
                         lasIndex = baseItemBG.appModel.index;
                     }
                 }
+                //遍历所有item，所有和item同一组的个数就是该组图标数
+                NSMutableArray *currentGroupItems = [NSMutableArray array];
+                for (WSAppItem *item in self.appItems) {
+                    if (appitem.appModel.group==item.appModel.group)
+                    {
+                        hasIconCount++;
+                        [currentGroupItems addObject:item];
+                    }
+                }
+                NSLog(@"preindex=%d lasindex=%d hasicons=%d",preIndex,lasIndex,hasIconCount);
                 //如果超过图标数，范围内图标前移，拖动的图标放在最后
                 if (hasIconCount-1 < lasIndex) { //拖动到所有图标之外，拖动的图标放在最后
                     for (WSAppItem *item in self.appItems) {
@@ -216,70 +227,55 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                 }
                 else  if (preIndex < lasIndex || preIndex > lasIndex)
                 {
-                    //后面的图标往前移动
-                    for (int i=0; i<row; i++) {
-                        for (int j=0; j<column; j++) {
-                            int index = i*column+j;
-                            WSBaseItemBG *baseItem = [self.baseItemBGs objectAtIndex:index];
-                            //所有需要前移的图标位置
-                            if (!baseItem.appModel.hasItem) {
-                                continue;
-                            }
-                            
-                            //所有需要前移的图标位置
-                            WSAppItem *appitem = [self.appItems objectAtIndex:index];
-                            //从上往下拖动图标
-                            if (index>=preIndex && index<=lasIndex) {
-                                //所有前移
-                                if (index == preIndex) {
-                                    appitem.appModel.index = lasIndex;
-                                }
-                                else
-                                {
-                                    appitem.appModel.index -= 1;
-                                }
-                            }
-                            //从下往上拖动图标
-                            else if(index>=lasIndex && index <= preIndex)
+                    //遍历所有item，所有和item同一组的个数就是该组
+                    for (WSAppItem *item in currentGroupItems) {
+                        int index = item.appModel.index;
+                        if (index>=preIndex && index<=lasIndex)
+                        {
+                            //所有前移
+                            if (index == preIndex)
                             {
-                                //所有后移
-                                if (index == preIndex) {
-                                    appitem.appModel.index = lasIndex;
-                                }
-                                else
-                                {
-                                    appitem.appModel.index += 1;
-                                }
+                                item.appModel.index = lasIndex;
+                            }
+                            else
+                            {
+                                item.appModel.index -= 1;
+                            }
+                        }
+                        else if (index>=lasIndex && index <= preIndex)
+                        {
+                            //所有后移
+                            if (index == preIndex) {
+                                item.appModel.index = lasIndex;
+                            }
+                            else
+                            {
+                                item.appModel.index += 1;
                             }
                         }
                     }
                 }
-                else if(preIndex == lasIndex)
-                {
-                    [UIView animateWithDuration:0.1 animations:^{
-                        appitem.center = itemCenter;
-                    }];
-                }
-                //重新排序之后需要把数组元素重新排序
-                NSArray *sortedArr = [self.appItems sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-                    WSAppItem *item1 = obj1;
-                    WSAppItem *item2 = obj2;
-                    if (item1.appModel.index<item2.appModel.index) {
-                        return NSOrderedAscending;
-                    }
-                    return NSOrderedDescending;
-                }];
-                self.appItems = [NSMutableArray arrayWithArray:sortedArr];
-                for (WSAppItem *appItem in self.appItems) {
-                    for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
-                        if (baseItemBG.appModel.index == appItem.appModel.index) {
-                            
-                            [UIView animateWithDuration:0.2 animations:^{
-                                appItem.center = baseItemBG.center;
-                                [self.bgScrollView bringSubviewToFront:appItem];
-                            }];
+//                //重新排序之后需要把数组元素重新排序
+//                NSArray *sortedArr = [self.appItems sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+//                    WSAppItem *item1 = obj1;
+//                    WSAppItem *item2 = obj2;
+//                    if (item1.appModel.index<item2.appModel.index) {
+//                        return NSOrderedAscending;
+//                    }
+//                    return NSOrderedDescending;
+//                }];
+//                self.appItems = [NSMutableArray arrayWithArray:sortedArr];
+                     for (WSAppItem *item in self.appItems) {
+//                        NSLog(@" = %@ index = %ld group=%ld",NSStringFromCGPoint(item.center),item.appModel.index,item.appModel.group);
+                        for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
+                            if (baseItemBG.appModel.group == item.appModel.group && baseItemBG.appModel.index == item.appModel.index) {
+//                                NSLog(@"baseitembgcenter = %@",NSStringFromCGPoint(baseItemBG.center));
+                                [UIView animateWithDuration:0.2 animations:^{
+                                    item.center = baseItemBG.center;
+                                    [self.bgScrollView bringSubviewToFront:item];
+                                }];
+                            }
                         }
-                    }
                 }
             }
         }
