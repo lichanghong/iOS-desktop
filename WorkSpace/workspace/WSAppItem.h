@@ -26,7 +26,7 @@
 - (void)scaleWhenSelect:(BOOL)toBig; //选中之后变大还是恢复
 - (void)setGrayMaskHidden:(BOOL)hidden;
 - (CGPoint)moveToLocation:(CGPoint)targetLocation inLocation:(CGPoint)inLocation;
- 
+- (BOOL)isAnimation;
 
 - (void)dismiss;
 

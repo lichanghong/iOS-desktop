@@ -49,8 +49,7 @@
 
 - (void)refreshContent;
 
-- (void)dismiss;
-
+ 
 
 @end
 
