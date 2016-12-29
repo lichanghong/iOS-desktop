@@ -271,7 +271,6 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                 NSLog(@"UIGestureRecognizerStateEnded---------");
                 [appitem setGrayMaskHidden:YES];
                 if (inSide!=0) {
-                    int preIndex = appitem.appModel.index; //拖走留下的空
                     int lasIndex = appitem.appModel.index;
                     CGPoint itemlocation = [longpress locationInView:self.bgScrollView];
 
@@ -298,17 +297,48 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                     {
                         int preIndex = appitem.appModel.index;
                         int preGroup = appitem.appModel.group-1;
-                     
-                        //把原来的group里面的appitem后面的图标全部前移
+        
+                        if (currentGroupItems.count >= lasIndex )
+                        {
+                            //遍历所有item，所有和item同一组的个数就是该组
+                            for (WSAppItem *item in currentGroupItems) {
+                                int index = item.appModel.index;
+                                if (index>=lasIndex)
+                                {
+                                    if (item==appitem) {
+                                        item.appModel.index = lasIndex;
+                                    }
+                                    else
+                                        item.appModel.index += 1;
+
+                                    NSLog(@"item    = index = %d group=%d",item.appModel.index,item.appModel.group);
+
+                                }
+
+//                                else if (index>=lasIndex && index <= preIndex)
+//                                {
+//                                    //所有后移
+//                                    if (index == preIndex) {
+//                                        item.appModel.index = lasIndex;
+//                                    }
+//                                    else
+//                                    {
+//                                        item.appModel.index += 1;
+//                                    }
+//                                }
+                            }
+                        }
+
+                        
+                        
                         for (WSAppItem *item in self.appItems)
                         {
                             for (WSBaseItemBG *baseItemBG in self.baseItemBGs) {
                                 if (item.appModel.group == preGroup
                                     && baseItemBG.appModel.index == item.appModel.index-1
                                     && baseItemBG.appModel.group == preGroup
-                                    && baseItemBG.appModel.index >= preIndex) {
-//                                    NSLog(@"item    = index = %d group=%d",item.appModel.index-1,item.appModel.group);
-//                                    NSLog(@"baseitem= index = %d group=%d",baseItemBG.appModel.index,baseItemBG.appModel.group);
+                                    && baseItemBG.appModel.index >= preIndex
+                                    ) {
                                     item.appModel.index--;
                                     [UIView animateWithDuration:0.2 animations:^{
                                         item.center = baseItemBG.center;
@@ -316,26 +346,17 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                                         item.label.text = [NSString stringWithFormat:@"%d",item.appModel.index];
                                     }];
                                 }
-                                
-                                else  if (item.appModel.group == appitem.appModel.group //把后来进入的group重新移动
-                                          && baseItemBG.appModel.index > lasIndex
-                                          && baseItemBG.appModel.group == appitem.appModel.group
-                                          ) {
-                                    item.appModel.index++;
-                                    NSLog(@"item    = index = %d group=%d",item.appModel.index,item.appModel.group);
-                                    NSLog(@"baseitem= index = %d group=%d",baseItemBG.appModel.index,baseItemBG.appModel.group);
+                                else if (baseItemBG.appModel.group == item.appModel.group && baseItemBG.appModel.index == item.appModel.index) {
+                                    //                                NSLog(@"baseitembgcenter = %@",NSStringFromCGPoint(baseItemBG.center));
                                     [UIView animateWithDuration:0.2 animations:^{
                                         item.center = baseItemBG.center;
-                                        [self.bgScrollView bringSubviewToFront:item];
                                         item.label.text = [NSString stringWithFormat:@"%d",item.appModel.index];
+                                        [self.bgScrollView bringSubviewToFront:item];
                                     }];
                                 }
                             }
                         }
                     }
-                    
-                  
-                
                 }
                 else
                 {
