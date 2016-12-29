@@ -314,22 +314,8 @@ static CGPoint inLocationb; //item里面的point需要是初始值，如果一�
                                     NSLog(@"item    = index = %d group=%d",item.appModel.index,item.appModel.group);
 
                                 }
-
-//                                else if (index>=lasIndex && index <= preIndex)
-//                                {
-//                                    //所有后移
-//                                    if (index == preIndex) {
-//                                        item.appModel.index = lasIndex;
-//                                    }
-//                                    else
-//                                    {
-//                                        item.appModel.index += 1;
-//                                    }
-//                                }
                             }
                         }
-
-                        
                         
                         for (WSAppItem *item in self.appItems)
                         {
