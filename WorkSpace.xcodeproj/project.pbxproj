@@ -118,7 +118,7 @@
 				TargetAttributes = {
 					956AEDCD1DFA613A000AE2D4 = {
 						CreatedOnToolsVersion = 8.1;
-						DevelopmentTeam = ZQQMP3TJXZ;
+						DevelopmentTeam = PG4XM8SH29;
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -284,15 +284,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
-				DEVELOPMENT_TEAM = ZQQMP3TJXZ;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = PG4XM8SH29;
 				INFOPLIST_FILE = WorkSpace/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.mobisentry.client;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "56b7d4f1-a6f1-4c33-9905-3f634a9b07aa";
-				PROVISIONING_PROFILE_SPECIFIER = "UniversalDistributProfile for cn.mobisentry.client";
+				PROVISIONING_PROFILE = "17992fc5-a33b-45af-9311-8592b395a6c4";
+				PROVISIONING_PROFILE_SPECIFIER = AllProductProvision;
 			};
 			name = Debug;
 		};
